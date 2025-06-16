@@ -135,7 +135,6 @@ public class ZippedBibleService
     public async IAsyncEnumerable<IEnumerable<Verse?>> GetVersesAsync(IEnumerable<Chapter?> targetEachChapter, [EnumeratorCancellation] CancellationToken token)
     {
         var eachTargetVerses = await GetEachVersesAsync(targetEachChapter, token).ConfigureAwait(false);
-
         // GetEnumerator() 반환형이 struct라 값 복사로 무한 반복되기를 예방하기 위해 캐스팅
         var targetVerseEnumerators = eachTargetVerses.Select(i => (IEnumerator<Verse>)i.GetEnumerator()).ToList();
 
