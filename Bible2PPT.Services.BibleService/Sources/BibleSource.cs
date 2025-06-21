@@ -6,8 +6,7 @@ public abstract class BibleSource
 {
     public static BibleSource[] AvailableSources = new BibleSource[]
     {
-        new GodpeopleBible { Id = 0 },
-        new GodpiaBible { Id = 1 },
+        new GodpiaBible { Id = 0 },
         new GoodtvBible { Id = 2 },
     };
 
