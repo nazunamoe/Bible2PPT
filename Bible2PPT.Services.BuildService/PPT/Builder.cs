@@ -125,7 +125,11 @@ public class Builder : JobManager
             {
                 _ = await Task.WhenAny(channel.Reader.WaitToReadAsync(token).AsTask(), produce).ConfigureAwait(false);
 
-                if (!channel.Reader.TryRead(out var item) || queriesDoneCount == queriesCount)
+                if (!channel.Reader.TryRead(out var item))
+                {
+                    break;
+                }
+                if (item.mainBook.SourceId == 0 && queriesDoneCount == queriesCount)
                 {
                     break;
                 }
