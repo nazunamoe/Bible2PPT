@@ -56,8 +56,6 @@ public class GoodtvBible : BibleSource
                 Number = i,
             }).ToList());
 
-    private static string StripHtmlTags(string s) => Regex.Replace(s, @"<.+?>", "", RegexOptions.Singleline);
-
     public override async Task<List<Verse>> GetVersesOnlineAsync(Chapter chapter)
     {
         var data = await client.GetStringAsync($"api/onlinebible/bibleread/read-all?version1={chapter.Book.Bible.OnlineId}&bible_code={chapter.Book.OnlineId}&jang={chapter.Number}").ConfigureAwait(false);
