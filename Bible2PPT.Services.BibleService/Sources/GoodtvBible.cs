@@ -1,4 +1,6 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
+using System.Runtime.ConstrainedExecution;
 using System.Text.RegularExpressions;
 using Bible2PPT.Bibles;
 using Bible2PPT.Extensions;
@@ -8,7 +10,7 @@ namespace Bible2PPT.Sources;
 
 public class GoodtvBible : BibleSource
 {
-    private const string BASE_URL = "http://goodtvbible.goodtv.co.kr";
+    private const string BASE_URL = "https://goodtvbible.goodtv.co.kr";
 
     private static readonly HttpClient client = new()
     {
@@ -23,8 +25,9 @@ public class GoodtvBible : BibleSource
 
     public override async Task<List<Bible>> GetBiblesOnlineAsync()
     {
-        var data = await client.GetStringAsync("/bible.asp").ConfigureAwait(false);
-        var matches = Regex.Matches(data, @"id=""span_(\d+)"">(.+?)<");
+        var data = await client.GetStringAsync("/api/onlinebible/bibleread/versions").ConfigureAwait(false);
+        var matches = Regex.Matches(data, @"{""version"":(\d+),""name"":""(.+?)""}");
+
         return matches.Cast<Match>().Select(i => new Bible
         {
             OnlineId = i.Groups[1].Value,
@@ -34,20 +37,9 @@ public class GoodtvBible : BibleSource
 
     public override async Task<List<Book>> GetBooksOnlineAsync(Bible bible)
     {
-        using var oldContent = new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["bible_idx"] = "1",
-            ["otnt"] = "1",
-        });
-        using var newContent = new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["bible_idx"] = "1",
-            ["otnt"] = "2",
-        });
-        var data = string.Join("", await Task.WhenAll(
-            client.PostAndGetStringAsync("/bible_otnt_exc.asp", oldContent),
-            client.PostAndGetStringAsync("/bible_otnt_exc.asp", newContent)).ConfigureAwait(false));
-        var matches = Regex.Matches(data, @"""idx"":(\d+).+?""bible_name"":""(.+?)"".+?""max_jang"":(\d+)");
+        var data = await client.GetStringAsync($"api/onlinebible/bibleread/volumes/all?version=0").ConfigureAwait(false);
+        Console.WriteLine(data);
+        var matches = Regex.Matches(data, @"{""bible_code"":(\d+),""bookname"":""(.+?)"",""max_jang"":(\d+),""eng_abb"":""(.+?)"",""testament"":""(.+?)""}");
         return matches.Cast<Match>().Select(i => new Book
         {
             OnlineId = i.Groups[1].Value,
@@ -68,34 +60,25 @@ public class GoodtvBible : BibleSource
 
     public override async Task<List<Verse>> GetVersesOnlineAsync(Chapter chapter)
     {
-        using var content = new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["bible_idx"] = chapter.Book.OnlineId,
-            ["jang_idx"] = chapter.OnlineId,
-            ["bible_version_1"] = chapter.Book.Bible.OnlineId,
-            ["bible_version_2"] = "0",
-            ["bible_version_3"] = "0",
-            ["count"] = "1",
-        });
-        var data = await client.PostAndGetStringAsync("/bible.asp", content).ConfigureAwait(false);
-        data = Regex.Match(data, @"<p id=""one_jang""><b>([\s\S]+?)</b></p>").Groups[1].Value;
-        var matches = Regex.Matches(data, @"<b>(\d+).*?</b>(.*?)<br>");
+        var data = await client.GetStringAsync($"api/onlinebible/bibleread/read-all?version1={chapter.Book.Bible.OnlineId}&bible_code={chapter.Book.OnlineId}&jang={chapter.Number}").ConfigureAwait(false);
+        var matches = Regex.Matches(data, @"{""jul"":(\d+),""text"":""(.*?)"".*?}");
         return matches.Cast<Match>().Select(i => new Verse
         {
             Number = int.Parse(i.Groups[1].Value, CultureInfo.InvariantCulture),
-            Text = StripHtmlTags(i.Groups[2].Value),
+            Text = i.Groups[2].Value,
         }).ToList();
     }
 
     private static string GetLanguageCode(Bible bible) => bible.OnlineId switch
     {
-        "2" or "1" or "3" or "4" or "16" => "ko",
-        "6" or "7" or "8" => "en",
-        "10" or "11" => "ja",
-        "14" => "zh-tw",
-        "15" => "zh-cn",
-        "19" => "he",
-        "18" => "el",
+        "0" or "1" or "2" or "3" or "4" or "5" or "7" or "16" => "ko",
+        "6" or "13" or "14" => "en",
+        "10" or "15" => "ja",
+        "12" => "zh-tw",
+        "11" => "zh-cn",
+        "8" => "he",
+        "9" => "el",
+        "19" => "es",
         _ => throw new NotImplementedException(),
     };
 
