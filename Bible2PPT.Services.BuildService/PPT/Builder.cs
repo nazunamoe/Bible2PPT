@@ -129,10 +129,6 @@ public class Builder : JobManager
                 {
                     break;
                 }
-                if (item.mainBook.SourceId == 0 && queriesDoneCount == queriesCount)
-                {
-                    break;
-                }
 
                 var (targetEachVerses, mainBook, mainChapter, startVerseNumber, endVerseNumber) = item;
                 await ppt.AppendChapter(targetEachVerses, mainBook, mainChapter, startVerseNumber, endVerseNumber, token).ConfigureAwait(false);
