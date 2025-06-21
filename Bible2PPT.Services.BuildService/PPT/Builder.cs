@@ -38,7 +38,6 @@ public class Builder : JobManager
         var chaptersDoneCount = 0;
         var chaptersCount = 0;
         OnJobProgress(new JobProgressEventArgs(job, null, queriesDoneCount, queriesCount, chaptersDoneCount, chaptersCount));
-
         async Task ProduceAsync()
         {
             foreach (var query in queries)
@@ -125,7 +124,8 @@ public class Builder : JobManager
             while (!channel.Reader.Completion.IsCompleted)
             {
                 _ = await Task.WhenAny(channel.Reader.WaitToReadAsync(token).AsTask(), produce).ConfigureAwait(false);
-                if (!channel.Reader.TryRead(out var item))
+
+                if (!channel.Reader.TryRead(out var item) || chaptersDoneCount == 1)
                 {
                     break;
                 }
