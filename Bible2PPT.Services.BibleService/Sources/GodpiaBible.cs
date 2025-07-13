@@ -23,7 +23,6 @@ public class GodpiaBible : BibleSource
     public override async Task<List<Bible>> GetBiblesOnlineAsync()
     {
         var data = await client.GetStringAsync($"/read/reading.asp").ConfigureAwait(false);
-        Console.WriteLine(data);
         var matches = Regex.Matches(data, @"<label class=""btn btn-outline-primary mod"" for=""btn-check-1-[a-zA-Z][^""]*"">.*?</label>");
         return matches.Cast<Match>().Select(i => new Bible
         {
@@ -36,16 +35,11 @@ public class GodpiaBible : BibleSource
     {
         var data = await client.GetStringAsync($"/read/reading.asp").ConfigureAwait(false);
         var matches = Regex.Matches(data, @"<label class=""btn btn-outline-primary mod"" for=""btn-check-[0-9a-zA-Z]{3}"">.*?</label>");
-        foreach (Match match in matches)
-        {
-            Console.WriteLine(match);
-        }
-        var result = matches.Cast<Match>().Select(i => new Book
+        return matches.Cast<Match>().Select(i => new Book
         {
             OnlineId = Regex.Match(i.Value, @"btn-check-([0-9a-zA-Z]+)").Groups[1].Value,
             Name = StripHtmlTags(Regex.Match(i.Value, @">([^<]+)<").Groups[1].Value),
         }).Select(x => x with { Key = GetBookKey(x) }).ToList();
-        return result;
     }
 
     public override async Task<List<Chapter>> GetChaptersOnlineAsync(Book book)

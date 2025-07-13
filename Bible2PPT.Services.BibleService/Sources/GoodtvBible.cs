@@ -27,7 +27,6 @@ public class GoodtvBible : BibleSource
     {
         var data = await client.GetStringAsync($"/api/onlinebible/bibleread/versions").ConfigureAwait(false);
         var matches = Regex.Matches(data, @"{""version"":(\d+),""name"":""(.+?)""}");
-
         return matches.Cast<Match>().Select(i => new Bible
         {
             OnlineId = i.Groups[1].Value,
@@ -38,7 +37,6 @@ public class GoodtvBible : BibleSource
     public override async Task<List<Book>> GetBooksOnlineAsync(Bible bible)
     {
         var data = await client.GetStringAsync($"api/onlinebible/bibleread/volumes/all?version=0").ConfigureAwait(false);
-        Console.WriteLine(data);
         var matches = Regex.Matches(data, @"{""bible_code"":(\d+),""bookname"":""(.+?)"",""max_jang"":(\d+),""eng_abb"":""(.+?)"",""testament"":""(.+?)""}");
         return matches.Cast<Match>().Select(i => new Book
         {
