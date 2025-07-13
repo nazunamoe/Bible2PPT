@@ -25,7 +25,7 @@ public class GoodtvBible : BibleSource
 
     public override async Task<List<Bible>> GetBiblesOnlineAsync()
     {
-        var data = await client.GetStringAsync("/api/onlinebible/bibleread/versions").ConfigureAwait(false);
+        var data = await client.GetStringAsync($"/api/onlinebible/bibleread/versions").ConfigureAwait(false);
         var matches = Regex.Matches(data, @"{""version"":(\d+),""name"":""(.+?)""}");
 
         return matches.Cast<Match>().Select(i => new Bible
