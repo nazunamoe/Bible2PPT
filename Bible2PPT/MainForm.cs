@@ -6,6 +6,7 @@ using Bible2PPT.Controls;
 using Bible2PPT.PPT;
 using Bible2PPT.Services.BibleService;
 using Bible2PPT.Services.TemplateService;
+using FontAwesome.Sharp;
 
 namespace Bible2PPT
 {
@@ -28,9 +29,24 @@ namespace Bible2PPT
             InitializeHistoryComponent();
             InitializeTemplatesComponent();
             InitializeSettingsComponent();
+            ScaleIconSizes(this);
 
             // TODO: 마지막 페이지 기억하기
             mainMultiPanel.SelectedPage = buildMultiPanelPage;
+        }
+
+        // IconButton의 아이콘 크기는 픽셀 단위라 자동 스케일링되지 않으므로 DPI에 맞게 직접 키움
+        // (IconPictureBox는 컨트롤 크기에 맞춰 아이콘을 다시 그리므로 제외)
+        private void ScaleIconSizes(Control parent)
+        {
+            foreach (Control control in parent.Controls)
+            {
+                if (control is IconButton button)
+                {
+                    button.IconSize = LogicalToDeviceUnits(button.IconSize);
+                }
+                ScaleIconSizes(control);
+            }
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

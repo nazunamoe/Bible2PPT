@@ -49,6 +49,10 @@ namespace Bible2PPT
             bibleComboBox.DisplayMember = nameof(Bible.Name);
             bibleComboBox.SelectedValueChanged += BibleComboBox_SelectedValueChanged;
 
+            // DataGridView의 행 높이와 행 머리글 너비는 자동 스케일링되지 않으므로 DPI에 맞게 직접 키움
+            biblesDataGridView.RowTemplate.Height = LogicalToDeviceUnits(biblesDataGridView.RowTemplate.Height);
+            biblesDataGridView.RowHeadersWidth = LogicalToDeviceUnits(biblesDataGridView.RowHeadersWidth);
+
             biblesDataGridView.AutoGenerateColumns = false;
             biblesSourceDataGridViewColumn.DataPropertyName = nameof(Bible.Source);
             biblesBibleDataGridViewColumn.DataPropertyName = nameof(Bible.Name);
