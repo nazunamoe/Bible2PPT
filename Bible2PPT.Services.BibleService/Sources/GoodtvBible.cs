@@ -1,19 +1,21 @@
-﻿using System.Globalization;
+﻿using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Bible2PPT.Bibles;
-using Bible2PPT.Extensions;
 using Bible2PPT.Services.BibleIndexService;
 
 namespace Bible2PPT.Sources;
 
 public class GoodtvBible : BibleSource
 {
-    private const string BASE_URL = "http://goodtvbible.goodtv.co.kr";
+    private const string BASE_URL = "https://api.goodtv.co.kr";
 
     private static readonly HttpClient client = new()
     {
         BaseAddress = new Uri(BASE_URL),
-        Timeout = TimeSpan.FromSeconds(5),
+        Timeout = TimeSpan.FromSeconds(10),
+        // User-Agent 헤더가 없으면 403 Forbidden으로 응답함
+        DefaultRequestHeaders = { { "User-Agent", "Bible2PPT" } },
     };
 
     public GoodtvBible()
@@ -21,38 +23,39 @@ public class GoodtvBible : BibleSource
         Name = "GOODTV 성경";
     }
 
+    // https://goodtvbible.goodtv.co.kr/onbibleread 페이지가 사용하는 JSON API의 응답 형식
+    private record ApiResponse<T>([property: JsonPropertyName("data")] T Data);
+    private record ApiVersion([property: JsonPropertyName("version")] int Version, [property: JsonPropertyName("name")] string Name);
+    private record ApiVolume([property: JsonPropertyName("bible_code")] int BibleCode, [property: JsonPropertyName("bookname")] string BookName, [property: JsonPropertyName("max_jang")] int MaxJang);
+    private record ApiReadAll([property: JsonPropertyName("data")] ApiReadAllData Data);
+    private record ApiReadAllData([property: JsonPropertyName("version1")] ApiReadAllVersion Version1);
+    private record ApiReadAllVersion([property: JsonPropertyName("content")] List<ApiVerse>? Content);
+    private record ApiVerse([property: JsonPropertyName("jul")] int Jul, [property: JsonPropertyName("text")] string? Text);
+
+    private static async Task<T> GetDataAsync<T>(string requestUri)
+    {
+        var response = await client.GetFromJsonAsync<ApiResponse<T>>(requestUri).ConfigureAwait(false);
+        return response!.Data;
+    }
+
     public override async Task<List<Bible>> GetBiblesOnlineAsync()
     {
-        var data = await client.GetStringAsync("/bible.asp").ConfigureAwait(false);
-        var matches = Regex.Matches(data, @"id=""span_(\d+)"">(.+?)<");
-        return matches.Cast<Match>().Select(i => new Bible
+        var versions = await GetDataAsync<List<ApiVersion>>("/onlinebible/bibleread/versions").ConfigureAwait(false);
+        return versions.Select(i => new Bible
         {
-            OnlineId = i.Groups[1].Value,
-            Name = i.Groups[2].Value,
+            OnlineId = $"{i.Version}",
+            Name = i.Name,
         }).Select(x => x with { LanguageCode = GetLanguageCode(x) }).ToList();
     }
 
     public override async Task<List<Book>> GetBooksOnlineAsync(Bible bible)
     {
-        using var oldContent = new FormUrlEncodedContent(new Dictionary<string, string>
+        var volumes = await GetDataAsync<List<ApiVolume>>($"/onlinebible/bibleread/volumes/all?version={bible.OnlineId}").ConfigureAwait(false);
+        return volumes.Select(i => new Book
         {
-            ["bible_idx"] = "1",
-            ["otnt"] = "1",
-        });
-        using var newContent = new FormUrlEncodedContent(new Dictionary<string, string>
-        {
-            ["bible_idx"] = "1",
-            ["otnt"] = "2",
-        });
-        var data = string.Join("", await Task.WhenAll(
-            client.PostAndGetStringAsync("/bible_otnt_exc.asp", oldContent),
-            client.PostAndGetStringAsync("/bible_otnt_exc.asp", newContent)).ConfigureAwait(false));
-        var matches = Regex.Matches(data, @"""idx"":(\d+).+?""bible_name"":""(.+?)"".+?""max_jang"":(\d+)");
-        return matches.Cast<Match>().Select(i => new Book
-        {
-            OnlineId = i.Groups[1].Value,
-            Name = i.Groups[2].Value,
-            ChapterCount = int.Parse(i.Groups[3].Value, CultureInfo.InvariantCulture),
+            OnlineId = $"{i.BibleCode}",
+            Name = i.BookName,
+            ChapterCount = i.MaxJang,
         }).Select(x => x with { Key = GetBookKey(x) }).ToList();
     }
 
@@ -68,35 +71,27 @@ public class GoodtvBible : BibleSource
 
     public override async Task<List<Verse>> GetVersesOnlineAsync(Chapter chapter)
     {
-        using var content = new FormUrlEncodedContent(new Dictionary<string, string>
+        var data = await GetDataAsync<ApiReadAll>($"/onlinebible/bibleread/read-all?version1={chapter.Book.Bible.OnlineId}&bible_code={chapter.Book.OnlineId}&jang={chapter.OnlineId}").ConfigureAwait(false);
+        return (data.Data.Version1.Content ?? new List<ApiVerse>()).Select(i => new Verse
         {
-            ["bible_idx"] = chapter.Book.OnlineId,
-            ["jang_idx"] = chapter.OnlineId,
-            ["bible_version_1"] = chapter.Book.Bible.OnlineId,
-            ["bible_version_2"] = "0",
-            ["bible_version_3"] = "0",
-            ["count"] = "1",
-        });
-        var data = await client.PostAndGetStringAsync("/bible.asp", content).ConfigureAwait(false);
-        data = Regex.Match(data, @"<p id=""one_jang""><b>([\s\S]+?)</b></p>").Groups[1].Value;
-        var matches = Regex.Matches(data, @"<b>(\d+).*?</b>(.*?)<br>");
-        return matches.Cast<Match>().Select(i => new Verse
-        {
-            Number = int.Parse(i.Groups[1].Value, CultureInfo.InvariantCulture),
-            Text = StripHtmlTags(i.Groups[2].Value),
+            Number = i.Jul,
+            // 시가서 등의 본문에 포함된 줄바꿈은 슬라이드에서 공백으로 표시
+            Text = Regex.Replace(StripHtmlTags(i.Text ?? ""), @"\s*\n\s*", " ").Trim(),
         }).ToList();
     }
 
     private static string GetLanguageCode(Bible bible) => bible.OnlineId switch
     {
-        "2" or "1" or "3" or "4" or "16" => "ko",
-        "6" or "7" or "8" => "en",
-        "10" or "11" => "ja",
-        "14" => "zh-tw",
-        "15" => "zh-cn",
-        "19" => "he",
-        "18" => "el",
-        _ => throw new NotImplementedException(),
+        "0" or "1" or "2" or "3" or "4" or "7" or "16" or "20" => "ko",
+        "5" or "6" or "13" or "14" => "en",
+        "10" or "15" => "ja",
+        "11" => "zh-tw",
+        "12" => "zh-cn",
+        "8" => "he",
+        "9" => "el",
+        "19" => "es",
+        // 새로 추가된 번역본 때문에 성경 목록 전체를 못 불러오는 일이 없도록 기본값 사용
+        _ => "ko",
     };
 
     private static BookKey GetBookKey(Book book) => book.OnlineId switch

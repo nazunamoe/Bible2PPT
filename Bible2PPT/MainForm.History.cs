@@ -166,7 +166,8 @@ namespace Bible2PPT
             }
 
             biblesToBuild.Clear();
-            foreach (var bible in job.Bibles)
+            // 성경 소스가 살아있는 성경만 불러오기
+            foreach (var bible in job.Bibles.Where(bible => bible.Source is not null))
             {
                 biblesToBuild.Add(bible);
             }

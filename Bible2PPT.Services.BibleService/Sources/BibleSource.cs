@@ -6,8 +6,8 @@ public abstract class BibleSource
 {
     public static BibleSource[] AvailableSources = new BibleSource[]
     {
-        new GodpeopleBible { Id = 0 },
-        new GodpiaBible { Id = 1 },
+        // 0: 갓피플 성경, 1: 갓피아 성경은 서비스 종료로 제거함
+        // 캐시와 작업 기록이 Id를 참조하므로 기존 Id는 재사용하지 않음
         new GoodtvBible { Id = 2 },
     };
 

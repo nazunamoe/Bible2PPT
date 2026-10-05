@@ -49,7 +49,7 @@ namespace Bible2PPT
         /// Offset: 1,
         /// Length: 4,
         /// </summary>
-        public int BibleSourceId { get; set; } = 0;
+        public int BibleSourceId { get; set; } = 2;
 
         /// <summary>
         /// Offset: 5,

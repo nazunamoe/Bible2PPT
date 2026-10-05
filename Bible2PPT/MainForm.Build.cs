@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
@@ -67,6 +68,11 @@ namespace Bible2PPT
             sourceComboBox.SelectedValueChanged += SourceComboBox_SelectedValueChanged;
             // 마지막으로 선택한 소스 불러오기
             sourceComboBox.SelectedValue = AppConfig.Context.BibleSourceId;
+            // 마지막으로 선택한 소스가 제거되었으면 첫 번째 소스 선택
+            if (sourceComboBox.SelectedItem == null && sourceComboBox.Items.Count > 0)
+            {
+                sourceComboBox.SelectedIndex = 0;
+            }
         }
 
         #region 빌드 대상 성경 관리
@@ -112,7 +118,7 @@ namespace Bible2PPT
                 return;
             }
             // 성경 소스가 응답이 없으면 다시 시도
-            catch (Exception ex) when (ex is OperationCanceledException || ex is WebException)
+            catch (Exception ex) when (ex is OperationCanceledException || ex is WebException || ex is HttpRequestException)
             {
                 if (DialogResult.Yes == MessageBox.Show(
                     $"성경 소스가 응답이 없습니다.\n다시 시도할까요?\n\n자세한 오류: {ex}",
@@ -319,7 +325,7 @@ namespace Bible2PPT
                 return;
             }
             // 성경 소스가 응답이 없으면 다시 시도
-            catch (Exception ex) when (ex is OperationCanceledException || ex is WebException)
+            catch (Exception ex) when (ex is OperationCanceledException || ex is WebException || ex is HttpRequestException)
             {
                 if (DialogResult.Yes == MessageBox.Show(
                     $"성경 소스가 응답이 없습니다.\n다시 시도할까요?\n\n자세한 오류: {ex}",
