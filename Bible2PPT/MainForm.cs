@@ -35,6 +35,16 @@ namespace Bible2PPT
             mainMultiPanel.SelectedPage = buildMultiPanelPage;
         }
 
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+
+            // FixedPanel이 Panel1이라 DPI 스케일링 시 왼쪽 패널만 커지지 않으므로
+            // 스케일링이 끝난 뒤 좌우 패널을 1:1로 맞춤
+            buildSplitContainer.SplitterDistance =
+                (buildSplitContainer.Width - buildSplitContainer.SplitterWidth) / 2;
+        }
+
         // IconButton의 아이콘 크기는 픽셀 단위라 자동 스케일링되지 않으므로 DPI에 맞게 직접 키움
         // (IconPictureBox는 컨트롤 크기에 맞춰 아이콘을 다시 그리므로 제외)
         private void ScaleIconSizes(Control parent)
