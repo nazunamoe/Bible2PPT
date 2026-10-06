@@ -86,18 +86,52 @@
 * **장별로 PPT 나누기**: `책 이름/장 번호.pptx`의 구조로 장별로 PPT를 만들어 저장합니다.
 
 
-## 설치 방법
+## 빌드 방법
 
-**성경2PPT**는 [실행 요구 사항](#실행-요구-사항)만 만족하면 설치 없이 사용할 수 있습니다. [Releases](https://github.com/sunghwan2789/Bible2PPT/releases) 페이지에서 최신 버전을 내려받고 바로 사용하세요!
+**성경2PPT**는 PowerPoint COM 참조를 사용하기 때문에 `dotnet build`가 아닌 Visual Studio(Build Tools)의 MSBuild로 빌드해야 합니다.
+
+### 빌드 요구 사항
+
+* **Windows 10 / 11**
+* **Visual Studio 2022 Build Tools** (*.NET 데스크톱 빌드 도구* 워크로드와 .NET SDK)
+    ```powershell
+    winget install --id Microsoft.VisualStudio.2022.BuildTools --exact --override "--wait --passive --norestart --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.NetCore.Component.SDK --includeRecommended"
+    ```
+    Visual Studio 2022에서 *.NET 데스크톱 개발* 워크로드를 설치했다면 따로 설치하지 않아도 됩니다.
+* **Microsoft PowerPoint**: 빌드할 때 PowerPoint의 COM 형식 라이브러리를 참조합니다.
+
+### 빌드하기
+
+저장소 폴더에서 [`build-release.ps1`](build-release.ps1)을 실행하세요.
+
+```powershell
+.\build-release.ps1 -Version 2.1.0                    # win-x86, win-x64 모두 빌드
+.\build-release.ps1 -Version 2.1.0 -Runtimes win-x64  # win-x64만 빌드
+.\build-release.ps1 -Version 2.1.0 -OutputDir D:\out  # 출력 폴더 지정
+```
+
+실행 정책 때문에 스크립트가 실행되지 않으면 `powershell -ExecutionPolicy Bypass -File .\build-release.ps1 -Version 2.1.0`으로 실행하세요.
+
+빌드가 끝나면 `publish` 폴더에 다음 파일이 만들어집니다.
+
+| 경로 | 내용 |
+| --- | --- |
+| `publish\win-x64\Bible2PPT.exe` | 64비트 실행 파일 |
+| `publish\win-x86\Bible2PPT.exe` | 32비트 실행 파일 |
+| `publish\Bible2PPT-<버전>-<런타임>.zip` | 배포용 압축 파일 |
+
+실행 파일에는 .NET 런타임이 포함되어 있어 [실행 요구 사항](#실행-요구-사항)만 만족하면 설치 없이 바로 사용할 수 있습니다.
 
 
 ## 실행 요구 사항
 
-### .NET Framework 4.8
-**성경2PPT**를 실행하는 데 필요한 프레임워크입니다. [여기](http://go.microsoft.com/fwlink/?LinkId=2085155)에서 내려받아서 설치하세요.
+### Windows 10 / 11
+64비트 Windows에서는 `win-x64`, 32비트 Windows에서는 `win-x86` 버전을 사용하세요.
+.NET 런타임은 실행 파일에 포함되어 있으므로 따로 설치하지 않아도 됩니다.
 
-### Microsoft PowerPoint 2007 이상
-PPT를 만들고 보는 데 필요한 프로그램입니다. 프로그램 구성 요소로 *Office 공유 기능* - *Visual Basic for Applications*를 설치해야 합니다.
+### Microsoft PowerPoint
+PPT를 만들고 보는 데 필요한 프로그램입니다. Microsoft 365 또는 Office 2016 이상의 데스크톱용 PowerPoint를 권장합니다.
+웹용 PowerPoint로는 사용할 수 없습니다.
 
 ### 인터넷 연결
 **성경 구절**을 처음 받아올 때 인터넷 연결이 필요합니다.
