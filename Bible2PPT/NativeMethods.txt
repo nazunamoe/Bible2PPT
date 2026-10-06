@@ -1,1 +1,4 @@
 ﻿ExtractAssociatedIcon
+AttachConsole
+GetStdHandle
+ATTACH_PARENT_PROCESS

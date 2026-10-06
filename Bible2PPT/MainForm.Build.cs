@@ -540,7 +540,7 @@ namespace Bible2PPT
             });
         }
 
-        private void ExtractDefaultTemplate()
+        internal static void ExtractDefaultTemplate()
         {
             if (File.Exists(AppConfig.TemplatePath))
             {
