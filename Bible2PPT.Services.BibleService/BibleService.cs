@@ -134,7 +134,8 @@ public class BibleService
 
         void LinkInfo(Book book)
         {
-            book.NameInfo = _bibleIndexService.GetBookName(book.Key, bible.LanguageCode);
+            // 책 정보가 없는 언어(히브리어, 헬라어 등)는 성경 소스가 제공하는 책 이름을 사용
+            book.NameInfo = _bibleIndexService.FindBookName(book.Key, bible.LanguageCode) ?? book.Name;
             book.AbbreviationInfo = _bibleIndexService.GetBookAbbreviation(book.Key, bible.LanguageCode);
         }
     }

@@ -4,6 +4,11 @@ namespace Bible2PPT.Services.BibleIndexService;
 
 public class BibleIndexService
 {
+    /// <summary>
+    /// 책 정보가 없는 언어의 성경에서 사용할 언어
+    /// </summary>
+    public const string DefaultLanguageCode = "ko";
+
     private readonly IDbContextFactory<BibleIndexContext> _dbFactory;
 
     public BibleIndexService(IDbContextFactory<BibleIndexContext> dbFactory)
@@ -20,15 +25,21 @@ public class BibleIndexService
             .First();
     }
 
-    public string GetBookName(BookKey key, string languageCode)
+    /// <summary>
+    /// 성경 언어의 책 이름을 찾는다. 해당 언어의 책 정보가 없으면 null을 반환한다.
+    /// </summary>
+    /// <remarks>
+    /// 책 이름은 성경 소스가 제공하는 이름으로 대신할 수 있으므로 다른 언어로 대체하지 않는다.
+    /// </remarks>
+    public string? FindBookName(BookKey key, string languageCode)
     {
         using var db = _dbFactory.CreateDbContext();
 
-        return GetBookInfoCandidates(db, key, languageCode)
-            .Where(x => x.Kind == BookInfoKind.Name)
+        return db.BookInfos
+            .Where(x => x.Key == key && x.LanguageCode == languageCode && x.Kind == BookInfoKind.Name)
             .OrderByDescending(x => x.IsPrimary)
-            .First()
-            .Value;
+            .Select(x => x.Value)
+            .FirstOrDefault();
     }
 
     public string GetBookAbbreviation(BookKey key, string languageCode)
@@ -52,7 +63,9 @@ public class BibleIndexService
     {
         using var db = _dbFactory.CreateDbContext();
 
-        var infos = db.BookInfos.Where(x => x.Kind == BookInfoKind.Abbreviation && x.Value == abbr);
+        // 영어, 스페인어 약자는 대소문자를 구분하지 않음 (예: john3:16)
+        var lowerAbbr = abbr.ToLowerInvariant();
+        var infos = db.BookInfos.Where(x => x.Kind == BookInfoKind.Abbreviation && x.Value.ToLower() == lowerAbbr);
         if (infos.Select(x => x.Key).Distinct().Count() != 1)
         {
             return null;
@@ -68,7 +81,8 @@ public class BibleIndexService
         var languageMatches = bookInfo.Where(x => x.LanguageCode == languageCode);
         if (!languageMatches.Any())
         {
-            return bookInfo;
+            // 구절 입력 칸에 넣는 약자는 해석할 수 있어야 하므로 기본 언어의 약자를 사용
+            return bookInfo.Where(x => x.LanguageCode == DefaultLanguageCode);
         }
 
         return languageMatches;

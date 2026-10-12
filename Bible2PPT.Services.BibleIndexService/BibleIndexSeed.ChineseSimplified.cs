@@ -1,0 +1,75 @@
+namespace Bible2PPT.Services.BibleIndexService;
+
+internal static partial class BibleIndexSeed
+{
+    public static IEnumerable<BookInfo> SeedChineseSimplified() =>
+        new CsvBibleIndexSeedBuilder("zh-cn", "和合本")
+            .Build($"""
+                {BookKey.Genesis},创世记,创
+                {BookKey.Exodus},出埃及记,出
+                {BookKey.Leviticus},利未记,利
+                {BookKey.Numbers},民数记,民
+                {BookKey.Deuteronomy},申命记,申
+                {BookKey.Joshua},约书亚记,书
+                {BookKey.Judges},士师记,士
+                {BookKey.Ruth},路得记,得
+                {BookKey.ISamuel},撒母耳记上,撒上
+                {BookKey.IISamuel},撒母耳记下,撒下
+                {BookKey.IKings},列王纪上,王上
+                {BookKey.IIKings},列王纪下,王下
+                {BookKey.IChronicles},历代志上,代上
+                {BookKey.IIChronicles},历代志下,代下
+                {BookKey.Ezra},以斯拉记,拉
+                {BookKey.Nehemiah},尼希米记,尼
+                {BookKey.Esther},以斯帖记,斯
+                {BookKey.Job},约伯记,伯
+                {BookKey.Psalms},诗篇,诗
+                {BookKey.Proverbs},箴言,箴
+                {BookKey.Ecclesiastes},传道书,传
+                {BookKey.SongOfSolomon},雅歌,歌
+                {BookKey.Isaiah},以赛亚书,赛
+                {BookKey.Jeremiah},耶利米书,耶
+                {BookKey.Lamentations},耶利米哀歌,哀
+                {BookKey.Ezekiel},以西结书,结
+                {BookKey.Daniel},但以理书,但
+                {BookKey.Hosea},何西阿书,何
+                {BookKey.Joel},约珥书,珥
+                {BookKey.Amos},阿摩司书,摩
+                {BookKey.Obadiah},俄巴底亚书,俄
+                {BookKey.Jonah},约拿书,拿
+                {BookKey.Micah},弥迦书,弥
+                {BookKey.Nahum},那鸿书,鸿
+                {BookKey.Habakkuk},哈巴谷书,哈
+                {BookKey.Zephaniah},西番雅书,番
+                {BookKey.Haggai},哈该书,该
+                {BookKey.Zechariah},撒迦利亚书,亚
+                {BookKey.Malachi},玛拉基书,玛
+                {BookKey.Matthew},马太福音,太
+                {BookKey.Mark},马可福音,可
+                {BookKey.Luke},路加福音,路
+                {BookKey.John},约翰福音,约
+                {BookKey.Acts},使徒行传,徒
+                {BookKey.Romans},罗马书,罗
+                {BookKey.ICorinthians},哥林多前书,林前
+                {BookKey.IICorinthians},哥林多后书,林后
+                {BookKey.Galatians},加拉太书,加
+                {BookKey.Ephesians},以弗所书,弗
+                {BookKey.Philippians},腓立比书,腓
+                {BookKey.Colossians},歌罗西书,西
+                {BookKey.IThessalonians},帖撒罗尼迦前书,帖前
+                {BookKey.IIThessalonians},帖撒罗尼迦后书,帖后
+                {BookKey.ITimothy},提摩太前书,提前
+                {BookKey.IITimothy},提摩太后书,提后
+                {BookKey.Titus},提多书,多
+                {BookKey.Philemon},腓利门书,门
+                {BookKey.Hebrews},希伯来书,来
+                {BookKey.James},雅各书,雅
+                {BookKey.IPeter},彼得前书,彼前
+                {BookKey.IIPeter},彼得后书,彼后
+                {BookKey.IJohn},约翰一书,约一
+                {BookKey.IIJohn},约翰二书,约二
+                {BookKey.IIIJohn},约翰三书,约三
+                {BookKey.Jude},犹大书,犹
+                {BookKey.Revelation},启示录,启
+                """);
+}

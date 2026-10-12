@@ -18,6 +18,11 @@ public class BibleIndexContext : DbContext
             {
                 BibleIndexSeed.SeedKoreanV1(),
                 BibleIndexSeed.SeedKoreanV2(),
+                BibleIndexSeed.SeedEnglish(),
+                BibleIndexSeed.SeedJapanese(),
+                BibleIndexSeed.SeedChineseSimplified(),
+                BibleIndexSeed.SeedChineseTraditional(),
+                BibleIndexSeed.SeedSpanish(),
             }
             .SelectMany(x => x));
     }

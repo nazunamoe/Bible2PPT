@@ -1,0 +1,75 @@
+namespace Bible2PPT.Services.BibleIndexService;
+
+internal static partial class BibleIndexSeed
+{
+    public static IEnumerable<BookInfo> SeedJapanese() =>
+        new CsvBibleIndexSeedBuilder("ja", "新共同訳")
+            .Build($"""
+                {BookKey.Genesis},創世記,創
+                {BookKey.Exodus},出エジプト記,出
+                {BookKey.Leviticus},レビ記,レビ
+                {BookKey.Numbers},民数記,民
+                {BookKey.Deuteronomy},申命記,申
+                {BookKey.Joshua},ヨシュア記,ヨシュ
+                {BookKey.Judges},士師記,士
+                {BookKey.Ruth},ルツ記,ルツ
+                {BookKey.ISamuel},サムエル記上,サム上
+                {BookKey.IISamuel},サムエル記下,サム下
+                {BookKey.IKings},列王記上,王上
+                {BookKey.IIKings},列王記下,王下
+                {BookKey.IChronicles},歴代誌上,代上
+                {BookKey.IIChronicles},歴代誌下,代下
+                {BookKey.Ezra},エズラ記,エズ
+                {BookKey.Nehemiah},ネヘミヤ記,ネヘ
+                {BookKey.Esther},エステル記,エス
+                {BookKey.Job},ヨブ記,ヨブ
+                {BookKey.Psalms},詩編,詩
+                {BookKey.Proverbs},箴言,箴
+                {BookKey.Ecclesiastes},コヘレトの言葉,コヘ
+                {BookKey.SongOfSolomon},雅歌,雅歌
+                {BookKey.Isaiah},イザヤ書,イザ
+                {BookKey.Jeremiah},エレミヤ書,エレ
+                {BookKey.Lamentations},哀歌,哀
+                {BookKey.Ezekiel},エゼキエル書,エゼ
+                {BookKey.Daniel},ダニエル書,ダニ
+                {BookKey.Hosea},ホセア書,ホセ
+                {BookKey.Joel},ヨエル書,ヨエ
+                {BookKey.Amos},アモス書,アモ
+                {BookKey.Obadiah},オバデヤ書,オバ
+                {BookKey.Jonah},ヨナ書,ヨナ
+                {BookKey.Micah},ミカ書,ミカ
+                {BookKey.Nahum},ナホム書,ナホ
+                {BookKey.Habakkuk},ハバクク書,ハバ
+                {BookKey.Zephaniah},ゼファニヤ書,ゼファ
+                {BookKey.Haggai},ハガイ書,ハガ
+                {BookKey.Zechariah},ゼカリヤ書,ゼカ
+                {BookKey.Malachi},マラキ書,マラ
+                {BookKey.Matthew},マタイによる福音書,マタ
+                {BookKey.Mark},マルコによる福音書,マコ
+                {BookKey.Luke},ルカによる福音書,ルカ
+                {BookKey.John},ヨハネによる福音書,ヨハ
+                {BookKey.Acts},使徒言行録,使
+                {BookKey.Romans},ローマの信徒への手紙,ロマ
+                {BookKey.ICorinthians},コリントの信徒への手紙一,一コリ
+                {BookKey.IICorinthians},コリントの信徒への手紙二,二コリ
+                {BookKey.Galatians},ガラテヤの信徒への手紙,ガラ
+                {BookKey.Ephesians},エフェソの信徒への手紙,エフェ
+                {BookKey.Philippians},フィリピの信徒への手紙,フィリ
+                {BookKey.Colossians},コロサイの信徒への手紙,コロ
+                {BookKey.IThessalonians},テサロニケの信徒への手紙一,一テサ
+                {BookKey.IIThessalonians},テサロニケの信徒への手紙二,二テサ
+                {BookKey.ITimothy},テモテへの手紙一,一テモ
+                {BookKey.IITimothy},テモテへの手紙二,二テモ
+                {BookKey.Titus},テトスへの手紙,テト
+                {BookKey.Philemon},フィレモンへの手紙,フィレ
+                {BookKey.Hebrews},ヘブライ人への手紙,ヘブ
+                {BookKey.James},ヤコブの手紙,ヤコ
+                {BookKey.IPeter},ペトロの手紙一,一ペト
+                {BookKey.IIPeter},ペトロの手紙二,二ペト
+                {BookKey.IJohn},ヨハネの手紙一,一ヨハ
+                {BookKey.IIJohn},ヨハネの手紙二,二ヨハ
+                {BookKey.IIIJohn},ヨハネの手紙三,三ヨハ
+                {BookKey.Jude},ユダの手紙,ユダ
+                {BookKey.Revelation},ヨハネの黙示録,黙
+                """);
+}
