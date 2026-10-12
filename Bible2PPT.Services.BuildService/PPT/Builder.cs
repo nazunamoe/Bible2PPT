@@ -1,4 +1,5 @@
-﻿using System.Threading.Channels;
+﻿using System.Text.RegularExpressions;
+using System.Threading.Channels;
 using Bible2PPT.Bibles;
 using Bible2PPT.Services;
 using Bible2PPT.Services.BibleIndexService;
@@ -111,7 +112,7 @@ public class Builder : JobManager
                 }
 
                 var (targetEachVerses, mainBook, mainChapter, startVerseNumber, endVerseNumber) = item;
-                var output = Path.Combine(job.OutputDestination, mainBook.Name, $"{mainChapter.Number:000}.pptx");
+                var output = GetSplitOutputPath(job.OutputDestination, mainBook.Name, mainChapter.Number);
                 using var ppt = new PPTManager(_powerPoint.Instance, job, output);
                 await ppt.AppendChapter(targetEachVerses, mainBook, mainChapter, startVerseNumber, endVerseNumber, token).ConfigureAwait(false);
                 chaptersDoneCount += 1;
@@ -138,6 +139,39 @@ public class Builder : JobManager
             ppt.Save();
         }
         await produce.ConfigureAwait(false);
+    }
+
+    private static readonly Regex ReservedFileNamePattern = new(@"^(CON|PRN|AUX|NUL|COM[0-9]|LPT[0-9])(\..*)?$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    /// <summary>
+    /// 장별로 나눈 PPT를 저장할 <c>출력 폴더/책 이름/장 번호.pptx</c> 경로를 만든다.
+    /// </summary>
+    /// <remarks>
+    /// 책 이름은 성경 소스가 응답한 값이므로 경로 구분자나 <c>..</c>, 드라이브 경로가 섞여도
+    /// 출력 폴더 밖에 파일을 만들지 않도록 폴더 이름으로 쓸 수 없는 문자를 바꾼다.
+    /// </remarks>
+    public static string GetSplitOutputPath(string outputDirectory, string bookName, int chapterNumber)
+    {
+        var invalidChars = Path.GetInvalidFileNameChars();
+        var folderName = new string(bookName.Select(c => invalidChars.Contains(c) ? '_' : c).ToArray())
+            // Windows는 폴더 이름 끝의 점과 공백을 무시하므로 제거 (".."도 여기서 빈 이름이 됨)
+            .TrimEnd('.', ' ')
+            .Trim();
+        if (folderName.Length == 0 || ReservedFileNamePattern.IsMatch(folderName))
+        {
+            folderName = $"_{folderName}";
+        }
+
+        // 드라이브 루트(C:\)는 끝의 구분자가 남으므로 구분자를 한 번만 붙임
+        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(outputDirectory));
+        var rootPrefix = Path.EndsInDirectorySeparator(root) ? root : root + Path.DirectorySeparatorChar;
+        var output = Path.GetFullPath(Path.Combine(root, folderName, $"{chapterNumber:000}.pptx"));
+        if (!output.StartsWith(rootPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($@"PPT를 저장할 경로가 출력 폴더를 벗어납니다: ""{output}""");
+        }
+
+        return output;
     }
 
     public new void Queue(Job job)

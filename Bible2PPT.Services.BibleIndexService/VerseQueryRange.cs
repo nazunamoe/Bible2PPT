@@ -5,7 +5,8 @@ namespace Bible2PPT.Services.BibleIndexService;
 
 public class VerseQueryRange //: ISpanParsable<VerseQueryRange>
 {
-    private static readonly Regex _regex = new(@"^(?<chapFrom>\d+)(?::(?<versFrom>\d+))?(?:-(?<chapTo>\d+)(?::(?<versTo>\d+))?)?$", RegexOptions.Compiled);
+    // \d는 전각 숫자 등 유니코드 숫자도 허용해서 int로 변환할 때 예외가 발생하므로 ASCII 숫자만 허용
+    private static readonly Regex _regex = new(@"^(?<chapFrom>[0-9]+)(?::(?<versFrom>[0-9]+))?(?:-(?<chapTo>[0-9]+)(?::(?<versTo>[0-9]+))?)?$", RegexOptions.Compiled);
 
     public int StartChapterNumber { get; set; } = 1;
     public int StartVerseNumber { get; set; } = 1;
@@ -15,7 +16,43 @@ public class VerseQueryRange //: ISpanParsable<VerseQueryRange>
     public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [NotNullWhen(true)] out VerseQueryRange? result)
     {
         result = new();
+        try
+        {
+            if (!TryParseCore(s, provider, result))
+            {
+                return false;
+            }
+        }
+        // 장, 절 번호가 int 범위를 넘으면 해석할 수 없는 구절로 취급
+        catch (OverflowException)
+        {
+            return false;
+        }
 
+        return IsValid(result);
+    }
+
+    /// <summary>
+    /// 0장, 0절이나 끝이 시작보다 앞서는 범위는 만들 PPT가 없으므로 잘못된 구절로 취급한다.
+    /// </summary>
+    private static bool IsValid(VerseQueryRange range)
+    {
+        if (range.StartChapterNumber < 1 || range.StartVerseNumber < 1)
+        {
+            return false;
+        }
+
+        if (range.EndChapterNumber < range.StartChapterNumber || range.EndVerseNumber < 1)
+        {
+            return false;
+        }
+
+        // 같은 장 안의 범위이면 끝 절이 시작 절보다 앞설 수 없음
+        return !(range.EndChapterNumber == range.StartChapterNumber && range.EndVerseNumber < range.StartVerseNumber);
+    }
+
+    private static bool TryParseCore(ReadOnlySpan<char> s, IFormatProvider? provider, VerseQueryRange result)
+    {
         var match = _regex.Match(s.ToString());
         if (!match.Success)
         {

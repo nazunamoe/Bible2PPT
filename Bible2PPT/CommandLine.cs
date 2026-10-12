@@ -36,7 +36,7 @@ namespace Bible2PPT
 성경 구절은 프로그램의 구절 입력 칸과 같은 형식입니다. 예) 요3:16 롬8:28-39
 
 옵션:
-  -o, --output <경로>    PPT를 저장할 경로 (--split이면 폴더)
+  -o, --output <경로>    PPT를 저장할 .pptx 경로 (--split이면 폴더)
                          생략하면 임시 파일로 만들고 파워포인트로 엽니다.
   -b, --bible <성경>     사용할 성경의 ID 또는 이름 (여러 번 지정하면 나란히 배치)
                          생략하면 프로그램에서 마지막으로 고른 성경을 사용합니다.
@@ -123,6 +123,12 @@ namespace Bible2PPT
                 Console.Error.WriteLine(ex.Message);
                 return ExitInvalidArguments;
             }
+            // 호출한 프로그램이 종료 코드로 실패를 알 수 있도록 예상하지 못한 오류도 처리되지 않은 예외로 끝내지 않음
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"PPT를 만들지 못했습니다.\n\n자세한 오류: {ex}");
+                return ExitBuildFailed;
+            }
             finally
             {
                 // 숨겨진 파워포인트를 종료하고 작업 관리자를 정리
@@ -151,7 +157,7 @@ namespace Bible2PPT
                 {
                     case "-o":
                     case "--output":
-                        options.Output = Path.GetFullPath(NextValue());
+                        options.Output = GetFullPath(NextValue());
                         break;
                     case "-b":
                     case "--bible":
@@ -159,7 +165,7 @@ namespace Bible2PPT
                         break;
                     case "-t":
                     case "--template":
-                        options.Template = Path.GetFullPath(NextValue());
+                        options.Template = GetFullPath(NextValue());
                         if (!File.Exists(options.Template))
                         {
                             throw new CommandLineException($"템플릿 파일이 없습니다: {options.Template}");
@@ -205,6 +211,18 @@ namespace Bible2PPT
                     }
                     return args[++i];
                 }
+
+                string GetFullPath(string path)
+                {
+                    try
+                    {
+                        return Path.GetFullPath(path);
+                    }
+                    catch (Exception ex) when (ex is ArgumentException || ex is NotSupportedException || ex is PathTooLongException)
+                    {
+                        throw new CommandLineException($"{arg}에 올바른 경로를 입력하세요: {path}");
+                    }
+                }
             }
 
             if (options.Help || options.ListBibles)
@@ -220,6 +238,25 @@ namespace Bible2PPT
             if (options.SplitChaptersIntoFiles && options.Output == null)
             {
                 throw new CommandLineException("장별로 PPT를 나누려면 --output으로 저장할 폴더를 지정하세요.");
+            }
+
+            if (options.SplitChaptersIntoFiles && File.Exists(options.Output))
+            {
+                throw new CommandLineException($"장별로 PPT를 나누려면 --output에 파일이 아닌 폴더를 지정하세요: {options.Output}");
+            }
+
+            if (!options.SplitChaptersIntoFiles && options.Output != null)
+            {
+                if (Directory.Exists(options.Output))
+                {
+                    throw new CommandLineException($"--output에 폴더가 아닌 .pptx 파일 경로를 지정하세요: {options.Output}");
+                }
+
+                // 다른 형식의 파일을 PPT로 덮어쓰거나, 열 때 다른 프로그램으로 실행되지 않도록 확장자를 제한
+                if (!string.Equals(Path.GetExtension(options.Output), ".pptx", StringComparison.OrdinalIgnoreCase))
+                {
+                    throw new CommandLineException($"--output의 확장자는 .pptx여야 합니다: {options.Output}");
+                }
             }
 
             return options;
@@ -253,7 +290,10 @@ namespace Bible2PPT
             var queryString = Regex.Replace(string.Join(" ", options.Verses).Trim(), @"\s+", " ");
             try
             {
-                serviceProvider.GetRequiredService<VerseQueryParser>().ParseVerseQueries(queryString);
+                if (!serviceProvider.GetRequiredService<VerseQueryParser>().ParseVerseQueries(queryString).Any())
+                {
+                    throw new CommandLineException("PPT로 만들 성경 구절을 입력하세요.");
+                }
             }
             catch (InvalidOperationException)
             {
