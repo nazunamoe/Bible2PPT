@@ -132,9 +132,17 @@ namespace Bible2PPT
             finally
             {
                 // 숨겨진 파워포인트를 종료하고 작업 관리자를 정리
-                if (serviceProvider is IAsyncDisposable disposable)
+                // 정리 중 오류로 종료 코드 대신 처리되지 않은 예외로 끝나지 않도록 함
+                try
                 {
-                    await disposable.DisposeAsync().ConfigureAwait(false);
+                    if (serviceProvider is IAsyncDisposable disposable)
+                    {
+                        await disposable.DisposeAsync().ConfigureAwait(false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine($"파워포인트를 정리하지 못했습니다: {ex.Message}");
                 }
 
                 // 파워포인트는 COM 참조가 남아 있으면 Quit 후에도 종료되지 않으므로
