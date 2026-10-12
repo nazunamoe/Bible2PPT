@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Bible2PPT.Bibles;
 using Bible2PPT.PPT;
+using Bible2PPT.Services;
 using Bible2PPT.Services.BibleIndexService;
 using Bible2PPT.Services.BibleService;
 using Bible2PPT.Services.TemplateService;
@@ -29,6 +30,13 @@ namespace Bible2PPT
         private const int ExitInvalidArguments = 1;
         private const int ExitBuildFailed = 2;
         private const int ExitPowerPointUnavailable = 3;
+
+        private static readonly TimeSpan PowerPointExitTimeout = TimeSpan.FromSeconds(30);
+
+        /// <summary>
+        /// PPT를 만들 때 실행한 파워포인트 (성경 목록 출력 등 파워포인트를 쓰지 않으면 null)
+        /// </summary>
+        private static HiddenPowerPoint startedPowerPoint;
 
         private const string Usage = @"사용법: Bible2PPT.exe <성경 구절...> [옵션]
        Bible2PPT.exe --list-bibles
@@ -151,6 +159,9 @@ namespace Bible2PPT
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
+
+                // 다른 프로그램이 연달아 호출할 때 다음 실행이 종료 중인 파워포인트에 연결되지 않도록 종료를 기다림
+                startedPowerPoint?.WaitForExit(PowerPointExitTimeout);
             }
         }
 
@@ -333,6 +344,8 @@ namespace Bible2PPT
             };
 
             var builder = serviceProvider.GetRequiredService<Builder>();
+            // Builder를 만들면서 실행한 파워포인트를 끝날 때 종료를 기다리기 위해 기억
+            startedPowerPoint = serviceProvider.GetRequiredService<HiddenPowerPoint>();
             var completion = new TaskCompletionSource<JobCompletedEventArgs>(TaskCreationOptions.RunContinuationsAsynchronously);
             builder.SubscribeJob(new Progress<EventArgs>(e =>
             {

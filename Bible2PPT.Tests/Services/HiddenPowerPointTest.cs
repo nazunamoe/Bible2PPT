@@ -45,5 +45,28 @@ namespace Bible2PPT.Tests.Services
             }
             Assert.False(IsPowerPointRunning());
         }
+
+        [Fact]
+        public void TestWaitForExit()
+        {
+            // 파워포인트를 잘 끝내는지 확인하는 테스트이므로
+            // 파워포인트가 이미 켜졌으면 테스트를 건너뜀
+            if (IsPowerPointRunning())
+            {
+                return;
+            }
+
+            var powerpoint = new HiddenPowerPoint();
+            powerpoint.Dispose();
+            Assert.True(powerpoint.HasQuit);
+
+            // COM 참조를 모두 해제한 뒤에 기다려야 파워포인트가 끝남
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
+            // 다음 실행이 종료 중인 파워포인트에 연결되지 않도록, 기다린 뒤에는 파워포인트가 남아 있지 않아야 함
+            Assert.True(powerpoint.WaitForExit(TimeSpan.FromSeconds(30)));
+            Assert.False(IsPowerPointRunning());
+        }
     }
 }
