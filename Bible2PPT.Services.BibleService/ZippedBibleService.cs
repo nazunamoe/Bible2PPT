@@ -22,37 +22,21 @@ public class ZippedBibleService
 
     private async Task<IEnumerable<IEnumerable<Book>>> GetEachBooksAsync(IEnumerable<Bible> bibles, CancellationToken token)
     {
-    RETRY:
-        try
-        {
-            return await Task.WhenAll(bibles
-                .Select(_bibleService.GetBooksAsync)
-                .ToList()).ConfigureAwait(false);
-        }
-        // 취소할 때까지 계속 재시도
-        catch (OperationCanceledException) when (!token.IsCancellationRequested)
-        {
-            await Task.Delay(3000, token).ConfigureAwait(false);
-            goto RETRY;
-        }
+        // 재시도는 성경 소스의 HttpClient가 횟수와 간격을 제한해서 처리함
+        token.ThrowIfCancellationRequested();
+        return await Task.WhenAll(bibles
+            .Select(_bibleService.GetBooksAsync)
+            .ToList()).ConfigureAwait(false);
     }
 
     private async Task<IEnumerable<IEnumerable<Chapter>>> GetEachChaptersAsync(IEnumerable<Book?> books, CancellationToken token)
     {
-    RETRY:
-        try
-        {
-            // 해당 책이 없는 성경도 있으므로 주의해서 장 정보 가져오기
-            return await Task.WhenAll(books
-                .Select(_bibleService.GetChaptersAsync)
-                .ToList()).ConfigureAwait(false);
-        }
-        // 취소할 때까지 계속 재시도
-        catch (OperationCanceledException) when (!token.IsCancellationRequested)
-        {
-            await Task.Delay(3000, token).ConfigureAwait(false);
-            goto RETRY;
-        }
+        // 재시도는 성경 소스의 HttpClient가 횟수와 간격을 제한해서 처리함
+        token.ThrowIfCancellationRequested();
+        // 해당 책이 없는 성경도 있으므로 주의해서 장 정보 가져오기
+        return await Task.WhenAll(books
+            .Select(_bibleService.GetChaptersAsync)
+            .ToList()).ConfigureAwait(false);
     }
 
     public async IAsyncEnumerable<IEnumerable<Chapter?>> GetChaptersAsync(IEnumerable<Book?> targetEachBook, [EnumeratorCancellation] CancellationToken token)
@@ -63,6 +47,11 @@ public class ZippedBibleService
         // GetEnumerator() 반환형이 struct라 값 복사로 무한 반복되기를 예방하기 위해 캐스팅
         var targetChapterEnumerators = eachTargetChapters.Select(i => (IEnumerator<Chapter>)i.GetEnumerator()).ToList();
 
+        // 성경 소스의 페이지 구조가 바뀌면 빈 결과가 나올 수 있으므로 원인을 알 수 있게 알림
+        if (!eachTargetChapters.Any(i => i.Any()))
+        {
+            throw new InvalidOperationException("성경 소스에서 장 목록을 가져오지 못했습니다. 성경 소스의 사이트가 바뀌었을 수 있습니다.");
+        }
         var startChapterNumber = eachTargetChapters.Where(i => i.Any()).Min(i => i.First().Number);
         for (var chapterNumber = startChapterNumber; ;)
         {
@@ -117,19 +106,11 @@ public class ZippedBibleService
 
     private async Task<IEnumerable<IEnumerable<Verse>>> GetEachVersesAsync(IEnumerable<Chapter?> chapters, CancellationToken token)
     {
-    RETRY:
-        try
-        {
-            return await Task.WhenAll(chapters
-                .Select(_bibleService.GetVersesAsync)
-                .ToList()).ConfigureAwait(false);
-        }
-        // 취소할 때까지 계속 재시도
-        catch (OperationCanceledException) when (!token.IsCancellationRequested)
-        {
-            await Task.Delay(3000, token).ConfigureAwait(false);
-            goto RETRY;
-        }
+        // 재시도는 성경 소스의 HttpClient가 횟수와 간격을 제한해서 처리함
+        token.ThrowIfCancellationRequested();
+        return await Task.WhenAll(chapters
+            .Select(_bibleService.GetVersesAsync)
+            .ToList()).ConfigureAwait(false);
     }
 
     public async IAsyncEnumerable<IEnumerable<Verse?>> GetVersesAsync(IEnumerable<Chapter?> targetEachChapter, [EnumeratorCancellation] CancellationToken token)
@@ -139,6 +120,11 @@ public class ZippedBibleService
         // GetEnumerator() 반환형이 struct라 값 복사로 무한 반복되기를 예방하기 위해 캐스팅
         var targetVerseEnumerators = eachTargetVerses.Select(i => (IEnumerator<Verse>)i.GetEnumerator()).ToList();
 
+        // 성경 소스의 페이지 구조가 바뀌면 빈 결과가 나올 수 있으므로 원인을 알 수 있게 알림
+        if (!eachTargetVerses.Any(i => i.Any()))
+        {
+            throw new InvalidOperationException("성경 소스에서 본문을 가져오지 못했습니다. 성경 소스의 사이트가 바뀌었을 수 있습니다.");
+        }
         var startVerseNumber = eachTargetVerses.Where(i => i.Any()).Min(i => i.First().Number);
         for (var verseNumber = startVerseNumber; ;)
         {

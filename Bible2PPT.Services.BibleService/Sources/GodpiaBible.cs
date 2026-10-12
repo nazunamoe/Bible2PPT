@@ -3,6 +3,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using Bible2PPT.Bibles;
 using Bible2PPT.Services.BibleIndexService;
+using Bible2PPT.Services.BibleService.Http;
 
 namespace Bible2PPT.Sources;
 
@@ -10,16 +11,31 @@ public class GodpiaBible : BibleSource
 {
     private const string BASE_URL = "https://www.godpia.com";
 
-    private static readonly HttpClient client = new()
-    {
-        BaseAddress = new Uri(BASE_URL),
-        Timeout = TimeSpan.FromSeconds(10),
-        DefaultRequestHeaders = { { "User-Agent", "Bible2PPT" } },
-    };
+    private static readonly HttpClient client = BibleSourceHttpClient.Create(BASE_URL);
 
     public GodpiaBible()
     {
         Name = "갓피아 성경";
+    }
+
+    // 성경 목록과 책 목록이 같은 페이지에 있으므로 한 번 받은 페이지를 잠시 재사용
+    private static readonly TimeSpan ReadingPageLifetime = TimeSpan.FromMinutes(10);
+    private static readonly object ReadingPageLock = new();
+    private static Task<string>? readingPage;
+    private static DateTime readingPageExpiresAt;
+
+    private static Task<string> GetReadingPageAsync()
+    {
+        lock (ReadingPageLock)
+        {
+            // 실패한 요청은 재사용하지 않고 다시 요청
+            if (readingPage is null || readingPage.IsFaulted || readingPage.IsCanceled || DateTime.UtcNow >= readingPageExpiresAt)
+            {
+                readingPage = client.GetStringAsync("/read/reading.asp");
+                readingPageExpiresAt = DateTime.UtcNow + ReadingPageLifetime;
+            }
+            return readingPage;
+        }
     }
 
     private static async Task<string> PostFormAsync(string requestUri, Dictionary<string, string> form)
@@ -32,7 +48,7 @@ public class GodpiaBible : BibleSource
     public override async Task<List<Bible>> GetBiblesOnlineAsync()
     {
         // 성경 읽기 페이지의 번역본 선택 버튼 (1번 화면 기준, 빈 값은 '미선택')
-        var data = await client.GetStringAsync("/read/reading.asp").ConfigureAwait(false);
+        var data = await GetReadingPageAsync().ConfigureAwait(false);
         var matches = Regex.Matches(data, @"for=""btn-check-1-(\w+)"">(.+?)</");
         return matches.Select(i => new Bible
         {
@@ -44,7 +60,7 @@ public class GodpiaBible : BibleSource
     public override async Task<List<Book>> GetBooksOnlineAsync(Bible bible)
     {
         // 책 목록은 번역본과 관계없이 같은 66권이 표시됨
-        var data = await client.GetStringAsync("/read/reading.asp").ConfigureAwait(false);
+        var data = await GetReadingPageAsync().ConfigureAwait(false);
         var matches = Regex.Matches(data, @"for=""btn-check-([0-9a-z]{3})"">(.+?)</");
         return matches.Select(i => new Book
         {

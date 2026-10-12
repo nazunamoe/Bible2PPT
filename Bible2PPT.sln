@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bible2PPT.Services.BibleInd
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bible2PPT.Services.BibleIndexService.Tests", "Bible2PPT.Services.BibleIndexService.Tests\Bible2PPT.Services.BibleIndexService.Tests.csproj", "{7F0CAC37-E2D2-4748-A85E-AD954943FF88}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bible2PPT.Services.BibleService.Tests", "Bible2PPT.Services.BibleService.Tests\Bible2PPT.Services.BibleService.Tests.csproj", "{6286853F-B613-4495-80F5-BEEDCCF7F540}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{7F0CAC37-E2D2-4748-A85E-AD954943FF88}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F0CAC37-E2D2-4748-A85E-AD954943FF88}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F0CAC37-E2D2-4748-A85E-AD954943FF88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6286853F-B613-4495-80F5-BEEDCCF7F540}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6286853F-B613-4495-80F5-BEEDCCF7F540}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6286853F-B613-4495-80F5-BEEDCCF7F540}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6286853F-B613-4495-80F5-BEEDCCF7F540}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

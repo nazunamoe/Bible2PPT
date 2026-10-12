@@ -1,4 +1,5 @@
-﻿using Bible2PPT.Bibles;
+﻿using System.Collections.Concurrent;
+using Bible2PPT.Bibles;
 using Bible2PPT.Data;
 using Bible2PPT.Sources;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,10 @@ public class BibleService
 {
     private readonly IDbContextFactory<BibleContext> _dbFactory;
     private readonly BibleIndexService.BibleIndexService _bibleIndexService;
+
+    // 빈 결과는 DB에 캐시되지 않으므로, 사이트 구조가 바뀌어 빈 결과가 나올 때 매번 다시 요청하지 않도록 잠시 기억
+    private static readonly TimeSpan EmptyResultLifetime = TimeSpan.FromMinutes(5);
+    private readonly ConcurrentDictionary<(string Kind, int Id), DateTime> _emptyResultExpiresAt = new();
 
     public BibleService(IDbContextFactory<BibleContext> dbFactory, BibleIndexService.BibleIndexService bibleIndexService)
     {
@@ -26,6 +31,19 @@ public class BibleService
     {
         using var db = _dbFactory.CreateDbContext();
         await db.Database.EnsureDeletedAsync().ConfigureAwait(false);
+        // DB를 지우면 Id가 다시 매겨지므로 빈 결과 기록도 지움
+        _emptyResultExpiresAt.Clear();
+    }
+
+    private bool IsRecentlyEmpty(string kind, int id) =>
+        _emptyResultExpiresAt.TryGetValue((kind, id), out var expiresAt) && DateTime.UtcNow < expiresAt;
+
+    private void RememberIfEmpty<T>(List<T> result, string kind, int id)
+    {
+        if (result.Count == 0)
+        {
+            _emptyResultExpiresAt[(kind, id)] = DateTime.UtcNow + EmptyResultLifetime;
+        }
     }
 
     private void LinkSource(BibleBase target, BibleSource source)
@@ -47,8 +65,13 @@ public class BibleService
         {
             return bibles;
         }
+        if (IsRecentlyEmpty(nameof(Bible), source.Id))
+        {
+            return bibles;
+        }
         // 캐시가 없으면 온라인에서 가져와서 저장
         bibles = await source.GetBiblesOnlineAsync().ConfigureAwait(false);
+        RememberIfEmpty(bibles, nameof(Bible), source.Id);
         bibles.ForEach(bible => LinkSource(bible, source));
         Cache();
         return bibles;
@@ -76,8 +99,13 @@ public class BibleService
             books.ForEach(LinkInfo);
             return books;
         }
+        if (IsRecentlyEmpty(nameof(Book), bible.Id))
+        {
+            return books;
+        }
         // 캐시가 없으면 온라인에서 가져와서 저장
         books = await bible.Source.GetBooksOnlineAsync(bible).ConfigureAwait(false);
+        RememberIfEmpty(books, nameof(Book), bible.Id);
         books.ForEach(LinkForeigns);
         Cache();
         books.ForEach(LinkInfo);
@@ -124,8 +152,13 @@ public class BibleService
         {
             return chapters;
         }
+        if (IsRecentlyEmpty(nameof(Chapter), book.Id))
+        {
+            return chapters;
+        }
         // 캐시가 없으면 온라인에서 가져와서 저장
         chapters = await book.Source.GetChaptersOnlineAsync(book).ConfigureAwait(false);
+        RememberIfEmpty(chapters, nameof(Chapter), book.Id);
         chapters.ForEach(LinkForeigns);
         chapters.Sort((a, b) => a.Number.CompareTo(b.Number));
         Cache();
@@ -166,8 +199,13 @@ public class BibleService
         {
             return verses;
         }
+        if (IsRecentlyEmpty(nameof(Verse), chapter.Id))
+        {
+            return verses;
+        }
         // 캐시가 없으면 온라인에서 가져와서 저장
         verses = await chapter.Source.GetVersesOnlineAsync(chapter).ConfigureAwait(false);
+        RememberIfEmpty(verses, nameof(Verse), chapter.Id);
         verses.ForEach(LinkForeigns);
         verses.Sort((a, b) => a.Number.CompareTo(b.Number));
         Cache();

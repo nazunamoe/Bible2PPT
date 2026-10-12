@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Bible2PPT.Bibles;
 using Bible2PPT.Services.BibleIndexService;
+using Bible2PPT.Services.BibleService.Http;
 
 namespace Bible2PPT.Sources;
 
@@ -12,12 +13,7 @@ public class YouVersionBible : BibleSource
 {
     private const string BASE_URL = "https://nodejs.bible.com";
 
-    private static readonly HttpClient client = new()
-    {
-        BaseAddress = new Uri(BASE_URL),
-        Timeout = TimeSpan.FromSeconds(10),
-        DefaultRequestHeaders = { { "User-Agent", "Bible2PPT" } },
-    };
+    private static readonly HttpClient client = BibleSourceHttpClient.Create(BASE_URL);
 
     // YouVersion 언어 태그 -> 앱에서 사용하는 언어 코드 (GOODTV 성경이 제공하는 언어와 같은 범위)
     private static readonly (string Tag, string LanguageCode)[] Languages =

@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Bible2PPT.Bibles;
 using Bible2PPT.Services.BibleIndexService;
+using Bible2PPT.Services.BibleService.Http;
 
 namespace Bible2PPT.Sources;
 
@@ -10,13 +11,7 @@ public class GoodtvBible : BibleSource
 {
     private const string BASE_URL = "https://api.goodtv.co.kr";
 
-    private static readonly HttpClient client = new()
-    {
-        BaseAddress = new Uri(BASE_URL),
-        Timeout = TimeSpan.FromSeconds(10),
-        // User-Agent 헤더가 없으면 403 Forbidden으로 응답함
-        DefaultRequestHeaders = { { "User-Agent", "Bible2PPT" } },
-    };
+    private static readonly HttpClient client = BibleSourceHttpClient.Create(BASE_URL);
 
     public GoodtvBible()
     {
