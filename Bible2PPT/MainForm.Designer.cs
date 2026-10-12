@@ -391,7 +391,7 @@
             // numberOfVerseLinesPerSlideTableLayoutPanel
             // 
             numberOfVerseLinesPerSlideTableLayoutPanel.ColumnCount = 2;
-            numberOfVerseLinesPerSlideTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 160F));
+            numberOfVerseLinesPerSlideTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.AutoSize));
             numberOfVerseLinesPerSlideTableLayoutPanel.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             numberOfVerseLinesPerSlideTableLayoutPanel.Controls.Add(numberOfVerseLinesPerSlideLabel, 0, 0);
             numberOfVerseLinesPerSlideTableLayoutPanel.Controls.Add(this.numberOfVerseLinesPerSlideComboBox, 1, 0);
@@ -547,7 +547,6 @@
             this.biblesDataGridView.ClipboardCopyMode = System.Windows.Forms.DataGridViewClipboardCopyMode.Disable;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Gulim", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
             dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
@@ -566,7 +565,6 @@
             this.biblesDataGridView.ReadOnly = true;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Gulim", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
             dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
@@ -618,7 +616,6 @@
             // 
             this.bibleComboBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.bibleComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.bibleComboBox.Font = new System.Drawing.Font("Gulim", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.bibleComboBox.FormattingEnabled = true;
             this.bibleComboBox.Location = new System.Drawing.Point(64, 2);
             this.bibleComboBox.Margin = new System.Windows.Forms.Padding(0, 2, 0, 0);
@@ -947,7 +944,6 @@
             // versesTextBox
             // 
             this.versesTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.versesTextBox.Font = new System.Drawing.Font("Gulim", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.versesTextBox.Location = new System.Drawing.Point(0, 202);
             this.versesTextBox.Margin = new System.Windows.Forms.Padding(0);
             this.versesTextBox.Name = "versesTextBox";
@@ -995,7 +991,6 @@
             // 
             this.booksSearchTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.booksSearchTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.booksSearchTextBox.Font = new System.Drawing.Font("Gulim", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.booksSearchTextBox.Location = new System.Drawing.Point(3, 1);
             this.booksSearchTextBox.Margin = new System.Windows.Forms.Padding(3, 1, 0, 0);
             this.booksSearchTextBox.Name = "booksSearchTextBox";
@@ -1137,7 +1132,6 @@
             this.historyDataGridView.BorderStyle = System.Windows.Forms.BorderStyle.None;
             dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Gulim", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
             dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
             dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;

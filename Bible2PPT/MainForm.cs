@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using Bible2PPT.Controls;
@@ -25,6 +26,9 @@ namespace Bible2PPT
             _templateService = templateService;
 
             InitializeComponent();
+            // 입력 칸은 크게 표시하되 글꼴은 시스템 글꼴을 따름
+            versesTextBox.Font = new Font(Font.FontFamily, 14.25F);
+            booksSearchTextBox.Font = new Font(Font.FontFamily, 14.25F);
             InitializeBuildComponent();
             InitializeHistoryComponent();
             InitializeTemplatesComponent();

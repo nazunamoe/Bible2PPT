@@ -29,7 +29,8 @@ namespace Bible2PPT
 
             // GDI+는 처음 초기화될 때의 DPI를 기억하므로 글꼴을 만들기 전에 DPI 모드를 먼저 설정해야 함
             Application.SetHighDpiMode(HighDpiMode.SystemAware);
-            Application.SetDefaultFont(new System.Drawing.Font("Gulim", 9));
+            // Windows가 대화 상자에 쓰는 글꼴을 사용 (한국어 Windows는 맑은 고딕, 영어 Windows는 Segoe UI)
+            Application.SetDefaultFont(System.Drawing.SystemFonts.MessageBoxFont ?? new System.Drawing.Font("Malgun Gothic", 9));
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             ConfigureServices(ex =>
