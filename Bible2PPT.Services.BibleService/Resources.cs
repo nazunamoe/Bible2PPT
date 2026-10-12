@@ -13,7 +13,7 @@ public static class Resources
         }
 
         var buffer = new byte[stream.Length];
-        stream.Read(buffer, 0, buffer.Length);
+        stream.ReadExactly(buffer);
         return buffer;
     }
 
@@ -26,7 +26,7 @@ public static class Resources
         }
 
         var buffer = new byte[stream.Length];
-        await stream.ReadAsync(buffer, 0, buffer.Length).ConfigureAwait(false);
+        await stream.ReadExactlyAsync(buffer).ConfigureAwait(false);
         return buffer;
     }
 

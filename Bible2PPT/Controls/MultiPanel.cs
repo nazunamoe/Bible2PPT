@@ -1,5 +1,6 @@
 ﻿// https://github.com/ennerperez/multipanelcontrol/blob/master/MultiPanelControl/MultiPanel.cs
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -7,6 +8,7 @@ namespace Bible2PPT.Controls
 {
     public class MultiPanel : Panel
     {
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         public MultiPanelPage SelectedPage
         {
             get { return _selectedPage; }

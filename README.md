@@ -123,11 +123,16 @@ Bible2PPT.exe 시23 -b 개역개정 -b NIV --open
 ### 빌드 요구 사항
 
 * **Windows 10 / 11**
-* **Visual Studio 2022 Build Tools** (*.NET 데스크톱 빌드 도구* 워크로드와 .NET SDK)
+* **.NET 10 SDK**
     ```powershell
-    winget install --id Microsoft.VisualStudio.2022.BuildTools --exact --override "--wait --passive --norestart --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.NetCore.Component.SDK --includeRecommended"
+    winget install --id Microsoft.DotNet.SDK.10 --exact
     ```
-    Visual Studio 2022에서 *.NET 데스크톱 개발* 워크로드를 설치했다면 따로 설치하지 않아도 됩니다.
+* **Visual Studio 2026 Build Tools** (*.NET 데스크톱 빌드 도구* 워크로드)
+    ```powershell
+    winget install --id Microsoft.VisualStudio.BuildTools --exact --override "--wait --passive --norestart --add Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools --add Microsoft.NetCore.Component.SDK --includeRecommended"
+    ```
+    Visual Studio 2026에서 *.NET 데스크톱 개발* 워크로드를 설치했다면 따로 설치하지 않아도 됩니다.
+    Visual Studio 2022(MSBuild 17.x)는 .NET 10 SDK를 사용할 수 없으므로 빌드되지 않습니다.
 * **Microsoft PowerPoint**: 빌드할 때 PowerPoint의 COM 형식 라이브러리를 참조합니다.
 
 ### 빌드하기

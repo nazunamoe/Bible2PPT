@@ -26,7 +26,8 @@ namespace Bible2PPT
             {
                 using var fs = File.OpenRead(path);
                 var data = new byte[size];
-                fs.Read(data, 0, size);
+                // 이전 버전의 짧은 설정 파일이면 나머지는 0으로 둠
+                fs.ReadAtLeast(data, size, throwOnEndOfStream: false);
                 Deserialize(data);
             }
             catch (FileNotFoundException)

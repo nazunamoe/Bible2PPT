@@ -12,13 +12,15 @@ namespace Bible2PPT.Controls
         {
             unsafe
             {
-                fixed (char* iconPath = Application.ExecutablePath)
+                // ExtractAssociatedIcon은 경로 버퍼(MAX_PATH)에 값을 쓸 수 있으므로 문자열을 복사한 버퍼를 넘김
+                var path = Application.ExecutablePath;
+                var buffer = new char[Math.Max(path.Length + 1, 260)];
+                path.CopyTo(0, buffer, 0, path.Length);
+                fixed (char* iconPath = buffer)
                 {
                     ushort iconId = 0;
-                    var iconHandle = Windows.Win32.PInvoke.ExtractAssociatedIcon(null, iconPath, ref iconId);
-                    var success = false;
-                    iconHandle.DangerousAddRef(ref success);
-                    _iconHandle = iconHandle.DangerousGetHandle();
+                    // 폼이 살아있는 동안 계속 사용하므로 아이콘 핸들은 해제하지 않음
+                    _iconHandle = Windows.Win32.PInvoke.ExtractAssociatedIcon(default, iconPath, &iconId);
                 }
             }
         }
